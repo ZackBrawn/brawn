@@ -1,0 +1,99 @@
+php artisan route:clear && php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan optimize
+
+
+
+<button
+    type="button"
+    @click="toggleWishlist"
+    :disabled="wishlistLoading || !page.props.auth?.user"
+    class="p-2 rounded-full transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+    :title="!page.props.auth?.user ? 'Login untuk menambahkan ke wishlist' : (isInWishlist ? 'Hapus dari Wishlist' : 'Tambah ke Wishlist')"
+>
+    <!-- Loading spinner -->
+    <svg v-if="wishlistLoading" class="h-6 w-6 animate-spin text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    
+    <!-- Heart icon - BAGIAN KUNCI untuk warna -->
+    <svg v-else 
+         class="h-6 w-6 transition-colors duration-200" 
+         :class="isInWishlist ? 'text-red-500' : 'text-gray-400 hover:text-red-400'" 
+         viewBox="0 0 24 24" 
+         :fill="isInWishlist ? 'currentColor' : 'none'" 
+         :stroke="isInWishlist ? 'none' : 'currentColor'" 
+         :stroke-width="isInWishlist ? '0' : '2'">
+        <path stroke-linecap="round" stroke-linejoin="round" 
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+</button>
+
+
+
+
+
+
+
+
+
+
+
+
+        <button 
+            @click.stop="toggleWishlist"
+            class="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 z-10 opacity-0 group-hover:opacity-100"
+            :class="{
+                'text-red-500': props.isInWishlist, 
+                'text-gray-500': !props.isInWishlist,
+                'opacity-100': props.isInWishlist // Always show if item is in wishlist
+            }"
+            :disabled="wishlistLoading"
+            :title="props.isInWishlist ? 'Hapus dari Wishlist' : 'Tambahkan ke Wishlist'"
+        >
+            <svg v-if="wishlistLoading" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :fill="isInWishlist ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" :fill="props.isInWishlist ? 'currentColor' : 'none'" />
+            </svg>
+        </button>
+
+
+
+
+
+/
+├── (Guest Routes) # Rute untuk pengunjung yang tidak login
+│   ├── /                             # Halaman utama
+│   ├── produk                        # Daftar semua produk
+│   └── produk/{product}              # Detail satu produk
+│
+├── (Authenticated User Routes) # Rute untuk pengguna yang sudah login
+│   ├── dashboard                     # Dashboard pengguna
+│   ├── keranjang                     # Halaman keranjang belanja
+│   ├── checkout                      # Halaman proses checkout
+│   └── akun/
+│       ├── profil                    # Halaman edit profil
+│       ├── alamat                    # Halaman manajemen alamat
+│       ├── wishlist                  # Halaman wishlist
+│       ├── notifikasi                # Daftar semua notifikasi
+│       └── pesanan/                  # Daftar semua pesanan (menggantikan /riwayat)
+│           ├── /                     # Daftar pesanan pengguna
+│           ├── /{order}              # Detail satu pesanan
+│           ├── /{order}/invoice      # Invoice untuk satu pesanan
+│           └── /{order}/pembayaran   # Halaman untuk upload bukti bayar
+│
+└── /admin/                         # Grup Rute Admin
+    ├── dashboard                     # Dashboard admin
+    ├── dompet/                       # Manajemen dompet (CRUD via Route::resource)
+    ├── categories/                   # Manajemen kategori (CRUD via Route::resource)
+    ├── products/                     # Manajemen produk (CRUD via Route::resource)
+    ├── suppliers/                    # Manajemen supplier (CRUD via Route::resource)
+    ├── orders/                       # Manajemen pesanan (hanya lihat daftar & detail)
+    │   ├── /
+    │   └── /{order}
+    └── users/                        # Manajemen pengguna (CRUD via Route::resource)
+
+(Authentication Routes)
+└── /login, /register, /logout, dll.

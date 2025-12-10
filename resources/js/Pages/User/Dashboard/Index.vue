@@ -1,0 +1,53 @@
+<script setup>
+import { computed } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
+import UserLayout from '@/Layouts/UserLayout.vue';
+import ProductCard from '@/Components/ProductCard.vue';
+
+// Definisikan layout untuk halaman ini
+defineOptions({ layout: UserLayout });
+
+// Definisikan props yang diterima dari controller
+const props = defineProps({
+    auth: {
+        type: Object,
+        default: () => ({
+            user: null
+        })
+    },
+    products: {
+        type: Array,
+        default: () => []
+    },
+});
+
+const user = computed(() => props.auth?.user);
+</script>
+
+<template>
+
+    <Head title="Dashboard User" />
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div v-if="user" class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <h1
+                    class="text-2xl text-center font-bold bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent">
+                    Selamat datang, {{ user?.name }}!</h1>
+                <div class="text-center text-sm text-gray-500">
+                    {{ user.email }}
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <h2 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent mb-4">Produk Terbaru</h2>
+                <div v-if="products.length > 0"
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <ProductCard v-for="product in products" :key="product.id" :product="product" />
+                </div>
+                <div v-else class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 text-center bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent">
+                    Tidak ada produk yang tersedia saat ini.
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
