@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useToast } from 'vue-toastification';
 
 defineOptions({
@@ -30,15 +30,33 @@ const total = computed(() => {
     return props.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 });
 
+const processingItem = ref(null);
+
 const updateQuantity = (item, quantity) => {
+    if (processingItem.value) return; // Prevent double submit
+
+    // Validasi stok
+    if (quantity > item.stock) {
+        toast.error(`Stok hanya tersedia ${item.stock}`);
+        quantity = item.stock;
+        if (quantity === parseInt(item.quantity)) return; // No change needed
+    }
+
     if (quantity < 1) return;
+
+    processingItem.value = item.id;
 
     router.post(route('cart.update', item.id), {
         quantity: quantity
     }, {
         preserveScroll: true,
         onSuccess: () => {
+            processingItem.value = null;
             // toast.success('Keranjang diperbarui');
+        },
+        onError: () => {
+            processingItem.value = null;
+            toast.error('Gagal memperbarui keranjang');
         }
     });
 };
@@ -93,13 +111,44 @@ const getImageUrl = (imagePath) => {
                                         <p class="mt-1 text-sm text-gray-500">{{ formatPrice(item.price) }} / item</p>
                                     </div>
                                     <div class="flex flex-1 items-end justify-between text-sm">
-                                        <div class="flex items-center border border-gray-300 rounded-md">
+                                        <div
+                                            class="flex items-center border border-indigo-200 rounded-md bg-indigo-50 w-full sm:w-auto">
                                             <button @click="updateQuantity(item, parseInt(item.quantity) - 1)"
-                                                class="px-3 py-1 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-                                                :disabled="item.quantity <= 1">-</button>
-                                            <span class="px-3 py-1 text-gray-900 font-medium">{{ item.quantity }}</span>
+                                                class="px-3 py-1 text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                                                :disabled="item.quantity <= 1 || processingItem === item.id">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M20 12H4" />
+                                                </svg>
+                                            </button>
+                                            <div class="relative w-12 sm:w-16">
+                                                <input type="number" :value="item.quantity"
+                                                    @change="(e) => updateQuantity(item, parseInt(e.target.value))"
+                                                    class="w-full text-center text-sm text-indigo-900 font-bold bg-transparent border-none focus:ring-0 p-0 appearance-none [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none"
+                                                    :max="item.stock" min="1" />
+                                                <div v-if="processingItem === item.id"
+                                                    class="absolute inset-0 flex items-center justify-center bg-indigo-50 bg-opacity-80">
+                                                    <svg class="animate-spin h-3 w-3 text-indigo-600"
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                            stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                        </path>
+                                                    </svg>
+                                                </div>
+                                            </div>
                                             <button @click="updateQuantity(item, parseInt(item.quantity) + 1)"
-                                                class="px-3 py-1 text-gray-600 hover:bg-gray-100">+</button>
+                                                class="px-3 py-1 text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                :disabled="processingItem === item.id || item.quantity >= item.stock">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </button>
                                         </div>
 
                                         <div class="flex">
@@ -144,8 +193,7 @@ const getImageUrl = (imagePath) => {
                         <div class="mt-6 flex justify-center text-center text-sm text-gray-500">
                             <p>
                                 atau
-                                <Link :href="route('products.index')"
-                                    class="font-medium text-indigo-600 hover:text-indigo-500">
+                                <Link :href="route('home')" class="font-medium text-indigo-600 hover:text-indigo-500">
                                     Lanjut Belanja
                                     <span aria-hidden="true"> &rarr;</span>
                                 </Link>
@@ -168,7 +216,7 @@ const getImageUrl = (imagePath) => {
                 <p class="mt-1 text-sm bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent">
                     Sepertinya Anda belum menambahkan produk apapun ke keranjang.</p>
                 <div class="mt-6">
-                    <Link :href="route('products.index')"
+                    <Link :href="route('home')"
                         class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-blue-400 hover:from-indigo-500 hover:to-blue-300 border-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Mulai Belanja
                     </Link>

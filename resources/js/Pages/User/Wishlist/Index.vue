@@ -73,7 +73,7 @@ const handleWishlistUpdate = (updatedWishlist) => {
                     <p class="mt-1 text-sm bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent">
                         Tambahkan produk ke wishlist Anda untuk melihatnya di sini.</p>
                     <div class="mt-6">
-                            <Link :href="route('products.index')"
+                            <Link :href="route('home')"
                                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-blue-400 hover:from-indigo-500 hover:to-blue-300 border-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 Jelajahi Produk
                             </Link>

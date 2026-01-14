@@ -44,8 +44,8 @@ const user = computed(() => {
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex"
                                 v-if="$page.props.auth && $page.props.auth.user">
                                 <Link :href="route('categories.index')"
-                                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
-                                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
+                                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-indigo-600 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
+                                    <svg class="w-6 h-6 text-blue-400 hover:text-indigo-600" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
@@ -61,7 +61,7 @@ const user = computed(() => {
                                 <input type="text"
                                     class="w-full px-4 py-2 border-2 border-blue-400 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-center gradient-placeholder"
                                     placeholder="Cari produk...">
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none pl-2">
                                     <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,7 +74,7 @@ const user = computed(() => {
                         <div class="hidden sm:flex sm:items-center sm:ml-6 gap-12">
                             <template v-if="$page.props.auth && $page.props.auth.user">
                                 <Link :href="route('wishlist.index')" class="text-gray-500 hover:text-gray-700">
-                                    <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor"
+                                    <svg class="h-6 w-6 text-blue-400 hover:text-indigo-600" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
@@ -82,7 +82,7 @@ const user = computed(() => {
                                     </svg>
                                 </Link>
                                 <Link :href="route('cart.index')" class="text-gray-500 hover:text-gray-700 relative">
-                                    <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor"
+                                    <svg class="h-6 w-6 text-blue-400 hover:text-indigo-600" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.182 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
@@ -95,9 +95,9 @@ const user = computed(() => {
                                     <Dropdown align="right" width="96">
                                         <template #trigger>
                                             <button type="button"
-                                                class="relative p-1 rounded-full text-gray-500 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                class="relative p-1 rounded-full text-gray-500 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                                 <span class="sr-only">View notifications</span>
-                                                <svg class="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg"
+                                                <svg class="h-6 w-6 text-blue-400 hover:text-indigo-600" xmlns="http://www.w3.org/2000/svg"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                                     aria-hidden="true">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -130,7 +130,7 @@ const user = computed(() => {
                                                 Tidak ada notifikasi.
                                             </div>
                                             <Link :href="route('notifications.index')"
-                                                class="block w-full px-4 py-2 text-center text-sm text-indigo-600 hover:text-indigo-800 hover:bg-gray-100 font-medium transition duration-150 ease-in-out">
+                                                class="block w-full px-4 py-2 text-center text-sm text-blue-400 hover:text-indigo-600 hover:bg-gray-100 font-medium transition duration-150 ease-in-out">
                                                 Lihat Semua Notifikasi
                                             </Link>
                                         </template>
@@ -143,7 +143,7 @@ const user = computed(() => {
                                             <span class="inline-flex rounded-md">
                                                 <button type="button"
                                                     class="inline-flex items-center border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                                                    <svg class="h-6 w-6 text-indigo-600" fill="none"
+                                                    <svg class="h-6 w-6 text-blue-400 hover:text-indigo-600" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24"
                                                         xmlns="http://www.w3.org/2000/svg">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -156,12 +156,12 @@ const user = computed(() => {
                                         </template>
 
                                         <template #content>
-                                            <DropdownLink :href="route('profile.index')" class="text-indigo-600"> Profil
+                                            <DropdownLink :href="route('profile.index')" class="text-blue-400 hover:text-indigo-600"> Profil
                                             </DropdownLink>
-                                            <DropdownLink :href="route('orders.index')" class="text-indigo-600"> Pesanan
+                                            <DropdownLink :href="route('orders.index')" class="text-blue-400 hover:text-indigo-600"> Pesanan
                                                 Saya </DropdownLink>
                                             <DropdownLink :href="route('logout')" method="post" as="button"
-                                                class="text-indigo-600">
+                                                class="text-blue-400 hover:text-indigo-600">
                                                 Log Out
                                             </DropdownLink>
                                         </template>

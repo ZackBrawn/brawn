@@ -16,6 +16,24 @@ class CartController extends Controller
         // Ambil data keranjang dari session
         $cart = session()->get('cart', []);
 
+        // Ambil data produk terbaru dari database untuk mendapatkan stok terkini
+        $productIds = array_keys($cart);
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        // Perbarui data cart dengan stok terbaru
+        foreach ($cart as $id => &$item) {
+            if (isset($products[$id])) {
+                $item['stock'] = $products[$id]->stock;
+                // Opsional: perbarui harga dan nama jika berubah
+                $item['price'] = $products[$id]->price;
+                $item['name'] = $products[$id]->name;
+                $item['image'] = $products[$id]->image_url;
+            } else {
+                // Jika produk tidak ditemukan di DB (mungkin dihapus), set stok 0 atau hapus dari cart
+                $item['stock'] = 0;
+            }
+        }
+
         return Inertia::render('User/Cart/Index', [
             'cart' => array_values($cart),
         ]);
@@ -41,7 +59,7 @@ class CartController extends Controller
                 "name" => $product->name,
                 "quantity" => $quantity,
                 "price" => $product->price,
-                "image" => $product->image, // Ganti dengan path gambar yang sesuai
+                "image" => $product->image_url, // Gunakan accessor image_url
             ];
         }
 

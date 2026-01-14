@@ -6,6 +6,6 @@
             <path d="M8 12H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg> -->
         <span
-            class="ml-2 text-2xl font-semibold font-mono bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">BRAWN</span>
+            class="ml-2 text-3xl font-semibold font-mono bg-gradient-to-r from-indigo-500 to-blue-300 bg-clip-text text-transparent">BRAWN</span>
     </div>
 </template>

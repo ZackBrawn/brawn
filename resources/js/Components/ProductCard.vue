@@ -162,6 +162,76 @@ const toggleWishlist = async () => {
     }
 };
 
+const cartLoading = ref(false);
+
+const cartItem = computed(() => {
+    return page.props.cart?.find(item => item.id === props.product.id);
+});
+
+const addToCart = () => {
+    if (cartLoading.value) return;
+    cartLoading.value = true;
+
+    router.post(route('cart.add', props.product.id), {
+        quantity: 1
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            cartLoading.value = false;
+            toast.success('Produk ditambahkan ke keranjang');
+        },
+        onError: () => {
+            cartLoading.value = false;
+            toast.error('Gagal menambahkan ke keranjang');
+        }
+    });
+};
+
+const updateCartQuantity = (newQty) => {
+    if (cartLoading.value) return;
+    cartLoading.value = true;
+
+    if (newQty <= 0) {
+        // Remove item
+        router.delete(route('cart.remove', props.product.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                cartLoading.value = false;
+                toast.success('Produk dihapus dari keranjang');
+            },
+            onError: () => {
+                cartLoading.value = false;
+            }
+        });
+    } else {
+        // Validate stock
+        if (newQty > props.product.stock) {
+            toast.error(`Stok hanya tersedia ${props.product.stock}`);
+            newQty = props.product.stock;
+            // Jika input manual melebihi stok, kita paksa update ke max stock tapi tidak reload jika sudah sama
+            if (newQty === cartItem.value.quantity) {
+                cartLoading.value = false;
+                // Force update render key input hack if needed, but router interaction might be enough or simple return
+                return;
+            }
+        }
+
+        // Update quantity
+        router.post(route('cart.update', props.product.id), {
+            quantity: newQty
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                cartLoading.value = false;
+            },
+            onError: () => {
+                cartLoading.value = false;
+                toast.error('Gagal mengupdate keranjang');
+            }
+        });
+    }
+};
+
 const formatPrice = (price) => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -219,7 +289,7 @@ const formatPrice = (price) => {
         <div class="px-4 pt-4 pb-6 flex-grow flex flex-col">
             <Link :href="route('products.show', product.slug)">
                 <h3 class="text-lg font-semibold text-gray-800 hover:text-indigo-600 transition-colors">{{ product.name
-                }}
+                    }}
                 </h3>
             </Link>
             <div class="flex justify-between items-start -mt-1">
@@ -236,19 +306,58 @@ const formatPrice = (price) => {
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xl font-bold text-gray-900">{{ formatPrice(product.price) }}</span>
                 </div>
-                <button @click="addToCart" :disabled="isLoading"
-                    class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
-                    :class="{ 'bg-green-600 hover:bg-green-700': showSuccess }">
-                    <svg v-if="!showSuccess" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <div v-if="cartItem"
+                    class="flex items-center justify-between border border-indigo-200 rounded-md bg-indigo-50 w-full">
+                    <button @click="updateCartQuantity(cartItem.quantity - 1)" :disabled="cartLoading"
+                        class="px-3 py-2 text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                        </svg>
+                    </button>
+                    <div class="relative flex-1">
+                        <input type="number" :value="cartItem.quantity"
+                            @change="(e) => updateCartQuantity(parseInt(e.target.value))"
+                            class="w-full text-center text-sm text-indigo-900 font-bold bg-transparent border-none focus:ring-0 p-0 appearance-none [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none"
+                            :max="product.stock" min="1" />
+                        <div v-if="cartLoading"
+                            class="absolute inset-0 flex items-center justify-center bg-indigo-50 bg-opacity-80">
+                            <svg class="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                    <button @click="updateCartQuantity(cartItem.quantity + 1)"
+                        :disabled="cartLoading || cartItem.quantity >= product.stock"
+                        class="px-3 py-2 text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                </div>
+
+                <button v-else @click="addToCart" :disabled="cartLoading"
+                    class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed shadow-sm hover:shadow active:scale-95 transform duration-100">
+                    <svg v-if="cartLoading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
                     </svg>
                     <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span>{{ showSuccess ? 'Ditambahkan!' : 'Beli' }}</span>
+                    <span>{{ cartLoading ? 'Processing...' : 'Beli' }}</span>
                 </button>
             </div>
         </div>
