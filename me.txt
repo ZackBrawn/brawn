@@ -4,7 +4,7 @@ php artisan cache:clear &&
 php artisan view:clear && 
 php artisan optimize
 
-
+test
 
 <button
     type="button"
