@@ -12,12 +12,19 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Ambil 10 produk terbaru untuk ditampilkan di halaman utama
-        $products = Product::with(['category', 'supplier'])->latest()->take(10)->get();
+        $query = Product::with(['category', 'supplier']);
+
+        if (request('search')) {
+            $query->where('name', 'like', '%' . request('search') . '%');
+        }
+
+        // Ambil 50 produk terbaru untuk ditampilkan di halaman utama
+        $products = $query->latest()->paginate(50)->withQueryString();
         $user = auth()->user();
 
         return Inertia::render('User/Dashboard/Index', [
             'products' => $products,
+            'filters' => request()->only(['search']),
             'auth' => [
                 'user' => $user ? [
                     'id' => $user->id,

@@ -69,7 +69,9 @@ class HandleInertiaRequests extends Middleware
             'notifications' => $user ? $user->notifications()->latest()->take(5)->get() : [],
             'unread_notifications_count' => $user ? $user->unreadNotifications()->count() : 0,
             'flash' => [
-                'message' => fn () => $request->session()->get('message')
+                'message' => fn () => $request->session()->get('message'),
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
             ],
             'cart' => array_values($request->session()->get('cart', [])),
             'session' => [

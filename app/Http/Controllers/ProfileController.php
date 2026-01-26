@@ -22,10 +22,12 @@ class ProfileController extends Controller
                 'user' => [
                     'name' => auth()->user()->name,
                     'email' => auth()->user()->email,
+                    'phone_number' => auth()->user()->phone_number,
                     'email_verified_at' => auth()->user()->email_verified_at,
                     'created_at' => auth()->user()->created_at,
-                ]
-            ]
+                ],
+            ],
+            'addresses' => auth()->user()->addresses,
         ]);
     }
 
@@ -41,9 +43,11 @@ class ProfileController extends Controller
                 'user' => [
                     'name' => auth()->user()->name,
                     'email' => auth()->user()->email,
+                    'phone_number' => auth()->user()->phone_number,
                     'email_verified_at' => auth()->user()->email_verified_at,
-                ]
-            ]
+                ],
+            ],
+            'addresses' => auth()->user()->addresses,
         ]);
     }
 
@@ -57,11 +61,12 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone_number' => ['nullable', 'string', 'max:20'],
         ]);
 
         $user->update($validated);
 
-        return redirect()->route('profile')
+        return redirect()->route('profile.edit')
             ->with('status', 'Profil berhasil diperbarui');
     }
 

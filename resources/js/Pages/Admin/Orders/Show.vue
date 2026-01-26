@@ -33,10 +33,18 @@ const formatDate = (dateString) => {
 };
 
 const getProductImage = (item) => {
-    if (item.product?.image_url) {
-        return `/storage/${item.product.image_url}`;
-    }
-    return 'https://via.placeholder.com/40';
+    const imagePath = item.product?.image_url;
+    if (!imagePath) return 'https://via.placeholder.com/40';
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.startsWith('storage/')) return `/${imagePath}`;
+    return `/storage/${imagePath}`;
+};
+
+const getProofUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    if (path.startsWith('storage/')) return `/${path}`;
+    return `/storage/${path}`;
 };
 
 const formatCurrency = (amount) => {
@@ -55,17 +63,18 @@ const formatCurrency = (amount) => {
         <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto px-4">
                 <h1 class="text-xl font-semibold text-gray-900">Detail Pesanan #{{ order.id }}</h1>
-                <p class="mt-2 text-sm text-gray-700">
-                    Status:
-                    <span :class="{
-                        'bg-yellow-100 text-yellow-800': order.status === 'Menunggu Pembayaran' || order.status === 'Diproses',
-                        'bg-green-100 text-green-800': order.status === 'Dibayar' || order.status === 'Selesai',
-                        'bg-blue-100 text-blue-800': order.status === 'Dikirim',
-                        'bg-red-100 text-red-800': order.status === 'Dibatalkan'
-                    }" class="px-3 py-1 text-sm font-medium rounded-full">
-                        {{ order.status }}
-                    </span>
-                </p>
+                <div class="mt-2 flex items-center">
+                    <span class="text-sm text-gray-700 mr-2">Status:</span>
+                    <select 
+                        :value="order.status" 
+                        @change="updateOrderStatus($event.target.value)"
+                        class="block w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    >
+                        <option v-for="(label, key) in statusOptions" :key="key" :value="key">
+                            {{ label }}
+                        </option>
+                    </select>
+                </div>
             </div>
             <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                 <Link :href="route('admin.orders.index')"
@@ -92,8 +101,8 @@ const formatCurrency = (amount) => {
                     <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">Telepon</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            <a v-if="order.user.telepon" :href="'https://wa.me/62' + order.user.telepon" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline">
-                                {{ order.user.telepon }}
+                            <a v-if="order.user.phone_number" :href="'https://wa.me/62' + order.user.phone_number" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                {{ order.user.phone_number }}
                             </a>
                             <span v-else>-</span>
                         </dd>
@@ -101,7 +110,10 @@ const formatCurrency = (amount) => {
                     <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">Alamat Pengiriman</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            <span v-if="order.address">{{ order.address.full_address }}</span>
+                            <div v-if="order.address" class="flex flex-col">
+                                <span class="font-medium text-gray-900">{{ order.address.recipient_name }}</span>
+                                <span class="text-gray-500">{{ order.address.full_address }}</span>
+                            </div>
                             <span v-else>-</span>
                         </dd>
                     </div>
@@ -152,9 +164,9 @@ const formatCurrency = (amount) => {
                         <dt class="text-sm font-medium text-gray-500">Bukti Pembayaran</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                             <div class="mt-2">
-                                <img :src="'/storage/' + order.bukti_pembayaran" :alt="'Bukti Pembayaran ' + order.id" class="max-w-xs rounded-lg shadow-sm border border-gray-200">
+                                <img :src="getProofUrl(order.bukti_pembayaran)" :alt="'Bukti Pembayaran ' + order.id" class="max-w-xs rounded-lg shadow-sm border border-gray-200">
                                 <div class="mt-2">
-                                    <a :href="'/storage/' + order.bukti_pembayaran" target="_blank" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                                    <a :href="getProofUrl(order.bukti_pembayaran)" target="_blank" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                         </svg>

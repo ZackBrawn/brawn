@@ -232,6 +232,13 @@ const updateCartQuantity = (newQty) => {
     }
 };
 
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/images/placeholder.png';
+    if (imagePath.startsWith('http')) return imagePath;
+    if (!imagePath.startsWith('storage/')) return `/storage/${imagePath}`;
+    return `/${imagePath}`;
+};
+
 const formatPrice = (price) => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -281,20 +288,20 @@ const formatPrice = (price) => {
 
         <Link :href="route('products.show', product.slug)">
             <div class="px-4 pt-0 pb-2">
-                <img :src="product.image_url" :alt="product.name"
+                <img :src="getImageUrl(product.image_url)" :alt="product.name"
                     class="w-full h-32 object-contain transition-transform duration-300 hover:scale-105 border-x-2 border-b-2 rounded-b-lg border-gray-200"
                     loading="lazy" @error="handleImageError" />
             </div>
         </Link>
         <div class="px-4 pt-4 pb-6 flex-grow flex flex-col">
             <Link :href="route('products.show', product.slug)">
-                <h3 class="text-lg font-semibold text-gray-800 hover:text-indigo-600 transition-colors">{{ product.name
-                    }}
+                <h3 class="text-lg font-semibold text-gray-800 hover:text-indigo-600 transition-colors line-clamp-1" :title="product.name">
+                    {{ product.name }}
                 </h3>
             </Link>
-            <div class="flex justify-between items-start -mt-1">
-                <p class="text-sm text-gray-500">{{ product.category.name }}</p>
-                <p class="text-xs">
+            <div class="flex justify-between items-start mt-1">
+                <p class="text-sm text-blue-500 line-clamp-1 pr-2" :title="product.category.name">{{ product.category.name }}</p>
+                <p class="text-xs whitespace-nowrap">
                     <span :class="product.stock > 10 ? 'text-green-600' : 'text-red-500 font-bold'">Stok: {{
                         product.stock }}</span>
                 </p>

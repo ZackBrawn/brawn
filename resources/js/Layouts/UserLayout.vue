@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { useToast } from 'vue-toastification';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -8,6 +9,16 @@ import NavLink from '@/Components/NavLink.vue';
 
 const showingNavigationDropdown = ref(false);
 const page = usePage();
+
+const search = ref(page.props.filters?.search || '');
+
+const handleSearch = () => {
+    router.get(route('home'), { search: search.value }, {
+        preserveState: true,
+        replace: true,
+        preserveScroll: true
+    });
+};
 
 // Debug log to check page props
 onMounted(() => {
@@ -17,12 +28,33 @@ onMounted(() => {
 // Watch for changes in page props
 watch(() => page.props, (newProps) => {
     console.log('Page props updated:', newProps);
+    if (newProps.filters?.search !== undefined) {
+        search.value = newProps.filters.search;
+    }
 }, { deep: true });
 
-const user = computed(() => {
-    console.log('Current auth user:', page.props?.auth?.user);
-    return page.props?.auth?.user || null;
+const cartCount = computed(() => {
+    return page.props.cart?.reduce((total, item) => total + (item.quantity || 0), 0) || 0;
 });
+
+const wishlistCount = computed(() => {
+    return page.props.wishlist?.length || 0;
+});
+
+const toast = useToast();
+
+watch(() => page.props.flash, (flash) => {
+    if (flash?.success) {
+        toast.success(flash.success);
+    }
+    if (flash?.error) {
+        toast.error(flash.error);
+    }
+    if (flash?.message) {
+        toast.info(flash.message);
+    }
+}, { deep: true, immediate: true });
+
 </script>
 
 <template>
@@ -59,9 +91,11 @@ const user = computed(() => {
                         <div class="hidden sm:flex items-center flex-1 max-w-xl mx-4">
                             <div class="relative w-full">
                                 <input type="text"
+                                    v-model="search"
+                                    @keydown.enter="handleSearch"
                                     class="w-full px-4 py-2 border-2 border-blue-400 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-center gradient-placeholder"
                                     placeholder="Cari produk...">
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none pl-2">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer pl-2" @click="handleSearch">
                                     <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -71,15 +105,20 @@ const user = computed(() => {
                             </div>
                         </div>
 
-                        <div class="hidden sm:flex sm:items-center sm:ml-6 gap-12">
+                        <div class="hidden sm:flex sm:items-center sm:ml-6 gap-8">
                             <template v-if="$page.props.auth && $page.props.auth.user">
-                                <Link :href="route('wishlist.index')" class="text-gray-500 hover:text-gray-700">
+                                <Link :href="route('wishlist.index')" class="text-gray-500 hover:text-gray-700 relative">
                                     <svg class="h-6 w-6 text-blue-400 hover:text-indigo-600" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
                                         </path>
                                     </svg>
+                                    <!-- Wishlist Badge -->
+                                    <span v-if="wishlistCount > 0" 
+                                          class="absolute -top-2 -right-2 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full min-w-[1.25rem] h-5">
+                                        {{ wishlistCount }}
+                                    </span>
                                 </Link>
                                 <Link :href="route('cart.index')" class="text-gray-500 hover:text-gray-700 relative">
                                     <svg class="h-6 w-6 text-blue-400 hover:text-indigo-600" fill="none" stroke="currentColor"
@@ -88,6 +127,11 @@ const user = computed(() => {
                                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.182 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
                                         </path>
                                     </svg>
+                                    <!-- Cart Badge -->
+                                    <span v-if="cartCount > 0" 
+                                          class="absolute -top-2 -right-2 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full min-w-[1.25rem] h-5">
+                                        {{ cartCount }}
+                                    </span>
                                 </Link>
 
                                 <!-- Notification Dropdown -->
@@ -104,9 +148,11 @@ const user = computed(() => {
                                                         stroke-width="2"
                                                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                                 </svg>
-                                                <!-- Red dot for unread notifications -->
+                                                <!-- Notification Badge -->
                                                 <span v-if="$page.props.unread_notifications_count > 0"
-                                                    class="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
+                                                      class="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full min-w-[1.25rem] h-5">
+                                                    {{ $page.props.unread_notifications_count }}
+                                                </span>
                                             </button>
                                         </template>
 

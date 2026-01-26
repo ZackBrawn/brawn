@@ -56,7 +56,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', 'string', 'in:user,admin'],
-            'telepon' => ['nullable', 'string', 'max:20'],
+            'phone_number' => ['nullable', 'string', 'max:20'],
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -65,7 +65,7 @@ class UserController extends Controller
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
                 'role' => $validated['role'],
-                'telepon' => $validated['telepon'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
             ]);
         });
 
@@ -103,7 +103,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'string', 'in:user,admin'],
-            'telepon' => ['nullable', 'string', 'max:20'],
+            'phone_number' => ['nullable', 'string', 'max:20'],
         ]);
 
         // Mencegah admin mengubah perannya sendiri menjadi non-admin
@@ -115,7 +115,7 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'telepon' => $validated['telepon'] ?? null,
+            'phone_number' => $validated['phone_number'] ?? null,
         ];
 
         if (!empty($validated['password'])) {

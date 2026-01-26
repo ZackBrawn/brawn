@@ -182,7 +182,7 @@ onMounted(() => {
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div v-if="order.user" class="space-y-1">
                                         <div class="text-sm font-medium text-gray-900">{{ order.user.name || 'Tamu' }}</div>
-                                        <div class="text-sm text-gray-500">{{ order.user.telepon || '-' }}</div>
+                                        <div class="text-sm text-gray-500">{{ order.user.phone_number || '-' }}</div>
                                     </div>
                                     <div v-else class="text-sm text-gray-500">Data pelanggan tidak tersedia</div>
                                 </td>
@@ -201,38 +201,22 @@ onMounted(() => {
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex justify-end space-x-2">
-                                        <button v-if="order.status === 'Menunggu Pembayaran'"
-                                            @click="updateOrderStatus(order.id, 'Dibayar')"
-                                            class="inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                            <svg class="h-3.5 w-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Bayar
-                                        </button>
-                                        <button v-if="order.status === 'Dibayar'"
-                                            @click="updateOrderStatus(order.id, 'Diproses')"
-                                            class="inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                            <svg class="h-3.5 w-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Proses
-                                        </button>
-                                        <button v-if="order.status === 'Diproses'"
-                                            @click="updateOrderStatus(order.id, 'Dikirim')"
-                                            class="inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            <svg class="h-3.5 w-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                            </svg>
-                                            Kirim
-                                        </button>
+                                    <div class="flex items-center space-x-2">
+                                        <select 
+                                            @change="updateOrderStatus(order.id, $event.target.value)"
+                                            class="block w-full pl-3 pr-10 py-2 text-xs border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs rounded-md"
+                                            :value="order.status"
+                                        >
+                                            <option v-for="(label, key) in statusOptions" :key="key" :value="key">
+                                                {{ label }}
+                                            </option>
+                                        </select>
                                         <Link :href="route('admin.orders.show', order.id)"
-                                            class="inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                                        <svg class="h-3.5 w-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        Detail
+                                            class="inline-flex justify-center items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
                                         </Link>
                                     </div>
                                 </td>

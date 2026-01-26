@@ -45,6 +45,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/update', [ProfileController::class, 'update'])->name('update');
         Route::delete('/delete', [ProfileController::class, 'destroy'])->name('destroy');
         Route::patch('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+        
+        // Address Routes
+        Route::post('/addresses', [App\Http\Controllers\AddressController::class, 'store'])->name('addresses.store');
+        Route::put('/addresses/{id}', [App\Http\Controllers\AddressController::class, 'update'])->name('addresses.update');
+        Route::delete('/addresses/{id}', [App\Http\Controllers\AddressController::class, 'destroy'])->name('addresses.destroy');
+        Route::patch('/addresses/{id}/default', [App\Http\Controllers\AddressController::class, 'setDefault'])->name('addresses.setdefault');
     });
 
     // Rute Cart
@@ -63,6 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [UserOrderController::class, 'index'])->name('index');
         Route::get('/{order}', [UserOrderController::class, 'show'])->name('show');
+        Route::post('/{order}/upload-proof', [UserOrderController::class, 'uploadProof'])->name('upload-proof');
     });
 
     // Rute Wishlist

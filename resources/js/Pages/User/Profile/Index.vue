@@ -14,6 +14,10 @@ const props = defineProps({
     status: {
         type: String,
     },
+    addresses: {
+        type: Array,
+        default: () => [],
+    }
 });
 </script>
 
@@ -53,6 +57,27 @@ const props = defineProps({
                                                 Email Anda belum terverifikasi.
                                             </p>
                                         </div>
+                                    </div>
+                                    <div class="border-t border-gray-200 pt-4 mt-4">
+                                        <h4 class="text-sm font-medium text-gray-900 mb-3">Daftar Alamat</h4>
+                                        <div v-if="addresses.length > 0" class="grid grid-cols-1 gap-4">
+                                            <div v-for="address in addresses" :key="address.id" 
+                                                class="border rounded-lg p-3 relative"
+                                                :class="{'border-indigo-500 bg-indigo-50': address.is_primary, 'border-gray-200': !address.is_primary}"
+                                            >
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="font-medium text-gray-900 text-sm">{{ address.label }}</span>
+                                                            <span v-if="address.is_primary" class="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">Utama</span>
+                                                        </div>
+                                                        <p class="text-sm text-gray-600 mt-1">{{ address.full_address }}</p>
+                                                        <p class="text-sm text-gray-600">{{ address.city }}, {{ address.province }} {{ address.postal_code }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p v-else class="text-sm text-gray-500 italic">Belum ada alamat yang tersimpan.</p>
                                     </div>
                                 </div>
                             </div>

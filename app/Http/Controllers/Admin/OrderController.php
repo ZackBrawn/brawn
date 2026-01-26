@@ -32,7 +32,7 @@ class OrderController extends Controller
         ];
 
         $query = Order::query()
-            ->with(['user' => fn($q) => $q->select('id', 'name', 'email', 'telepon')])
+            ->with(['user' => fn($q) => $q->select('id', 'name', 'email', 'phone_number')])
             ->select('id', 'user_id', 'grand_total', 'status', 'created_at', 'updated_at');
 
         // Apply search filter
@@ -43,7 +43,7 @@ class OrderController extends Controller
                     ->orWhereHas('user', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%")
-                            ->orWhere('telepon', 'like', "%{$search}%");
+                            ->orWhere('phone_number', 'like', "%{$search}%");
                     });
             });
         }
@@ -80,14 +80,26 @@ class OrderController extends Controller
     {
         // Eager load relationships
         $order->load([
-            'user' => fn($q) => $q->select('id', 'name', 'email', 'telepon'),
-            'address' => fn($q) => $q->select('id', 'label', 'full_address', 'city', 'province', 'postal_code'),
+            'user' => fn($q) => $q->select('id', 'name', 'email', 'phone_number'),
+            'address' => fn($q) => $q->select('id', 'recipient_name', 'label', 'full_address', 'city', 'province', 'postal_code'),
             'paymentMethod' => fn($q) => $q->select('id', 'name', 'account_name', 'account_number'),
             'orderItems.product' => fn($q) => $q->select('id', 'name', 'image_url', 'price')
         ]);
         
+        // Define all possible order statuses
+        $statusOptions = [
+            'Menunggu Pembayaran' => 'Menunggu Pembayaran',
+            'Dibayar' => 'Dibayar',
+            'Diproses' => 'Diproses',
+            'Dikirim' => 'Dikirim',
+            // 'Selesai' => 'Selesai', // Usually automated or manual
+            'Selesai' => 'Selesai',
+            'Dibatalkan' => 'Dibatalkan',
+        ];
+
         return Inertia::render('Admin/Orders/Show', [
             'order' => $order,
+            'statusOptions' => $statusOptions,
         ]);
     }
     
@@ -105,6 +117,9 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
+            // Capture previous status before update
+            $previousStatus = $order->status;
+
             $order->status = $validated['status'];
             $order->save();
 
@@ -117,15 +132,7 @@ class OrderController extends Controller
             // Create notification for the user
             $user = $order->user;
             if ($user) {
-                // Notifikasi kini dibuat melalui model Notification, bukan melalui helper
-                $user->notifications()->create([
-                    'order_id' => $order->id,
-                    'type' => 'order_status_updated',
-                    'message' => "Status pesanan #{$order->id} telah diubah menjadi '{$order->status}'",
-                    'data' => json_encode(['order_id' => $order->id, 'new_status' => $order->status]),
-                    'new_status' => $order->status,
-                    'prev_status' => $order->getOriginal('status'),
-                ]);
+                $user->notify(new OrderStatusUpdated($order, $previousStatus));
             }
             
             DB::commit();
@@ -133,6 +140,8 @@ class OrderController extends Controller
             return redirect()->back()->with('success', "Status pesanan #{$order->id} berhasil diperbarui.");
         } catch (\Exception $e) {
             DB::rollBack();
+            // Log the error for debugging
+            \Illuminate\Support\Facades\Log::error('Order status update failed: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Gagal memperbarui status pesanan. Silakan coba lagi.']);
         }
     }

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import UserLayout from '@/Layouts/UserLayout.vue';
 import ProductCard from '@/Components/ProductCard.vue';
+import Pagination from '@/Components/Pagination.vue';
 
 // Definisikan layout untuk halaman ini
 defineOptions({ layout: UserLayout });
@@ -16,8 +17,8 @@ const props = defineProps({
         })
     },
     products: {
-        type: Array,
-        default: () => []
+        type: Object,
+        default: () => ({})
     },
 });
 
@@ -45,13 +46,17 @@ const user = computed(() => props.auth?.user);
                 <h2
                     class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent mb-4">
                     Produk Terbaru</h2>
-                <div v-if="products.length > 0"
-                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <ProductCard v-for="product in products" :key="product.id" :product="product" />
+                <div v-if="products.data && products.data.length > 0">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <ProductCard v-for="product in products.data" :key="product.id" :product="product" />
+                    </div>
+                    <div class="mt-6 flex justify-center">
+                        <Pagination :links="products.links" />
+                    </div>
                 </div>
                 <div v-else
                     class="bg-white bg-opacity-50 overflow-hidden shadow-sm sm:rounded-lg p-6 text-center bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent">
-                    Tidak ada produk yang tersedia saat ini.
+                    Produk yang anda cari belum tersedia.
                 </div>
             </div>
         </div>

@@ -40,17 +40,5 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
     
-    /**
-     * Get the URL for the product image.
-     *
-     * @return string
-     */
-    public function getImageUrlAttribute($value)
-    {
-        if (str_starts_with($value, 'http')) {
-            return $value;
-        }
-        
-        return $value ? asset('storage/' . $value) : null;
-    }
+
 }

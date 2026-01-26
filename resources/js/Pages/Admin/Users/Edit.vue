@@ -48,8 +48,8 @@
                                 </div>
                                 <div class="sm:col-span-3">
                                     <label for="phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
-                                    <input type="text" id="phone" v-model="form.phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" :class="{ 'border-red-500': form.errors.phone }">
-                                    <p v-if="form.errors.phone" class="mt-2 text-sm text-red-600">{{ form.errors.phone }}</p>
+                                    <input type="text" id="phone" v-model="form.phone_number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" :class="{ 'border-red-500': form.errors.phone_number }">
+                                    <p v-if="form.errors.phone_number" class="mt-2 text-sm text-red-600">{{ form.errors.phone_number }}</p>
                                 </div>
                             </div>
                         </div>
@@ -87,7 +87,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     role: props.user.role,
-    phone: props.user.telepon || '' // Menggunakan 'telepon' dari prop, tapi diubah menjadi 'phone' di form
+    phone_number: props.user.phone_number || ''
 });
 
 const toast = useToast();

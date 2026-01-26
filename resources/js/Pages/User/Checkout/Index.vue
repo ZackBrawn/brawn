@@ -1,15 +1,12 @@
 <script setup>
 import { Head, useForm, Link } from '@inertiajs/vue3';
-// import UserLayout from '@/Layouts/UserLayout.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { computed, onMounted } from 'vue';
-
-// defineOptions({
-//     layout: UserLayout
-// });
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import Modal from '@/Components/Modal.vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({
     cart: {
@@ -23,16 +20,22 @@ const props = defineProps({
     paymentMethods: {
         type: Array,
         default: () => []
+    },
+    defaultAddress: {
+        type: Object,
+        default: () => null
     }
 });
+
+const confirmingCheckout = ref(false);
 
 const form = useForm({
     name: props.auth?.user?.name || '',
     email: props.auth?.user?.email || '',
-    address: '',
-    city: '',
-    postal_code: '',
-    phone: '',
+    address: props.defaultAddress?.full_address || '', 
+    city: props.defaultAddress?.city || '',
+    postal_code: props.defaultAddress?.postal_code || '',
+    phone: props.auth?.user?.phone_number || '', 
     payment_method_id: null,
     note: ''
 });
@@ -58,11 +61,22 @@ const subtotal = computed(() => {
 
 const total = computed(() => subtotal.value);
 
+const confirmCheckout = () => {
+    confirmingCheckout.value = true;
+};
+
+const closeCheckoutModal = () => {
+    confirmingCheckout.value = false;
+};
+
 const submit = () => {
     form.post(route('checkout.store'), {
         preserveScroll: true,
+        onSuccess: () => {
+            closeCheckoutModal();
+        },
         onError: () => {
-            // Handle errors
+            closeCheckoutModal();
         }
     });
 };
@@ -79,11 +93,20 @@ const getImageUrl = (imagePath) => {
 
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-6">
+                <Link :href="route('cart.index')" class="text-sm text-gray-600 hover:text-indigo-600 flex items-center gap-1 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Kembali ke Keranjang
+                </Link>
+            </div>
+            
             <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent mb-8">
                 Checkout
             </h1>
 
-            <form @submit.prevent="submit">
+            <form @submit.prevent="confirmCheckout">
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- Left Column: Shipping & Payment -->
                     <div class="lg:w-2/3 space-y-6">
@@ -95,52 +118,38 @@ const getImageUrl = (imagePath) => {
                                 Informasi Pengiriman
                             </h2>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="col-span-1 md:col-span-2">
-                                    <InputLabel for="name" value="Nama Lengkap" />
-                                    <TextInput id="name" v-model="form.name" type="text" class="mt-1 block w-full" required autofocus />
-                                    <InputError :message="form.errors.name" class="mt-2" />
-                                </div>
-
-                                <div class="col-span-1 md:col-span-2">
-                                    <InputLabel for="email" value="Email Address" />
-                                    <TextInput id="email" v-model="form.email" type="email" class="mt-1 block w-full" required />
-                                    <InputError :message="form.errors.email" class="mt-2" />
-                                </div>
-
-                                <div class="col-span-1 md:col-span-2">
-                                    <InputLabel for="phone" value="Nomor Telepon" />
-                                    <TextInput id="phone" v-model="form.phone" type="tel" class="mt-1 block w-full" required placeholder="08..." />
-                                    <InputError :message="form.errors.phone" class="mt-2" />
-                                </div>
-
-                                <div class="col-span-1 md:col-span-2">
-                                    <InputLabel for="address" value="Alamat Lengkap" />
-                                    <TextInput id="address" v-model="form.address" type="text" class="mt-1 block w-full" required placeholder="Nama Jalan, No. Rumah, RT/RW" />
-                                    <InputError :message="form.errors.address" class="mt-2" />
+                            <div v-if="defaultAddress" class="space-y-4">
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-semibold text-gray-900">{{ form.name }}</p>
+                                            <p class="text-gray-600 mt-1">{{ defaultAddress.full_address }}</p>
+                                            <p class="text-gray-600">{{ defaultAddress.city }}, {{ defaultAddress.province }} {{ defaultAddress.postal_code }}</p>
+                                            <p class="text-gray-600 mt-1">{{ form.phone }}</p>
+                                        </div>
+                                        <Link :href="route('profile.edit')" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                            Ubah Alamat
+                                        </Link>
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <InputLabel for="city" value="Kota/Kabupaten" />
-                                    <TextInput id="city" v-model="form.city" type="text" class="mt-1 block w-full" required />
-                                    <InputError :message="form.errors.city" class="mt-2" />
-                                </div>
-
-                                <div>
-                                    <InputLabel for="postal_code" value="Kode Pos" />
-                                    <TextInput id="postal_code" v-model="form.postal_code" type="text" class="mt-1 block w-full" required />
-                                    <InputError :message="form.errors.postal_code" class="mt-2" />
-                                </div>
-                                
-                                <div class="col-span-1 md:col-span-2">
                                     <InputLabel for="note" value="Catatan Tambahan (Opsional)" />
                                     <textarea 
                                         id="note" 
                                         v-model="form.note"
                                         class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                         rows="3"
+                                        placeholder="Catatan untuk kurir"
                                     ></textarea>
                                 </div>
+                            </div>
+
+                            <div v-else class="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                <p class="text-gray-600 mb-4">Anda belum memiliki alamat pengiriman utama.</p>
+                                <Link :href="route('profile.edit')" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Tambah Alamat di Profil
+                                </Link>
                             </div>
                         </div>
 
@@ -221,8 +230,8 @@ const getImageUrl = (imagePath) => {
                             <div class="mt-8">
                                 <PrimaryButton 
                                     class="w-full justify-center py-4 text-lg shadow-lg hover:shadow-xl transition-all" 
-                                    :class="{ 'opacity-25 cursor-not-allowed': form.processing || cart.length === 0 || paymentMethods.length === 0 }" 
-                                    :disabled="form.processing || cart.length === 0 || paymentMethods.length === 0"
+                                    :class="{ 'opacity-25 cursor-not-allowed': form.processing || cart.length === 0 || paymentMethods.length === 0 || !defaultAddress }" 
+                                    :disabled="form.processing || cart.length === 0 || paymentMethods.length === 0 || !defaultAddress"
                                 >
                                     Bayar Sekarang
                                 </PrimaryButton>
@@ -236,6 +245,34 @@ const getImageUrl = (imagePath) => {
             </form>
         </div>
     </div>
+
+    <!-- Confirm Checkout Modal -->
+    <Modal :show="confirmingCheckout" @close="closeCheckoutModal">
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-900">
+                Konfirmasi Pesanan
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-600">
+                Apakah Anda yakin ingin melanjutkan pesanan ini? Pastikan semua data sudah benar.
+            </p>
+
+            <div class="mt-6 flex justify-end">
+                <SecondaryButton @click="closeCheckoutModal">
+                    Batal
+                </SecondaryButton>
+
+                <PrimaryButton
+                    class="ml-3"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                    @click="submit"
+                >
+                    Ya, Pesan Sekarang
+                </PrimaryButton>
+            </div>
+        </div>
+    </Modal>
 </template>
 
 <style scoped>
