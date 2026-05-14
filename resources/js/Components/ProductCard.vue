@@ -23,6 +23,11 @@ const props = defineProps({
 const page = usePage();
 const wishlistLoading = ref(false);
 const showWishlistError = ref('');
+const imageError = ref(false);
+
+const handleImageError = () => {
+    imageError.value = true;
+};
 
 // Mengambil data wishlist dari props halaman Inertia
 const userWishlist = computed(() => {
@@ -252,7 +257,7 @@ const formatPrice = (price) => {
 <template>
 
     <div
-        class="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-80 w-52 flex flex-col relative">
+        class="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col relative">
         <!-- Error Message -->
         <div v-if="showWishlistError"
             class="absolute top-0 left-0 right-0 bg-red-100 text-red-700 text-xs p-2 text-center z-20">
@@ -286,32 +291,39 @@ const formatPrice = (price) => {
 
 
 
-        <Link :href="route('products.show', product.slug)">
-            <div class="px-4 pt-0 pb-2">
-                <img :src="getImageUrl(product.image_url)" :alt="product.name"
-                    class="w-full h-32 object-contain transition-transform duration-300 hover:scale-105 border-x-2 border-b-2 rounded-b-lg border-gray-200"
-                    loading="lazy" @error="handleImageError" />
+        <Link :href="route('products.show', product.slug)" class="relative block overflow-hidden aspect-square bg-gray-50">
+            <div v-if="imageError || !product.image_url" class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200">
+                <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ product.category.name }}</span>
             </div>
+            <img v-else :src="getImageUrl(product.image_url)" :alt="product.name"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy" @error="handleImageError" />
         </Link>
-        <div class="px-4 pt-4 pb-6 flex-grow flex flex-col">
-            <Link :href="route('products.show', product.slug)">
-                <h3 class="text-lg font-semibold text-gray-800 hover:text-indigo-600 transition-colors line-clamp-1" :title="product.name">
+        <div class="p-3 sm:p-4 flex-grow flex flex-col">
+            <Link :href="route('products.show', product.slug)" class="mb-1">
+                <h3 class="text-sm sm:text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[2.5rem]" :title="product.name">
                     {{ product.name }}
                 </h3>
             </Link>
-            <div class="flex justify-between items-start mt-1">
-                <p class="text-sm text-blue-500 line-clamp-1 pr-2" :title="product.category.name">{{ product.category.name }}</p>
-                <p class="text-xs whitespace-nowrap">
-                    <span :class="product.stock > 10 ? 'text-green-600' : 'text-red-500 font-bold'">Stok: {{
-                        product.stock }}</span>
-                </p>
+            
+            <div class="flex justify-between items-center mb-2">
+                <span class="hidden sm:inline-block text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                    {{ product.category.name }}
+                </span>
+                <span class="text-[10px] sm:text-xs" :class="product.stock > 10 ? 'text-green-600' : 'text-red-500 font-bold'">
+                    Stok: {{ product.stock }}
+                </span>
             </div>
-            <p v-if="product.supplier" class="text-sm text-gray-500 mt-1">
+
+            <p v-if="product.supplier" class="text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-4">
                 {{ product.supplier.name }}
             </p>
-            <div class="mt-auto pt-4">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xl font-bold text-gray-900">{{ formatPrice(product.price) }}</span>
+            <div class="mt-auto">
+                <div class="flex items-center justify-between mb-2 sm:mb-3">
+                    <span class="text-base sm:text-lg font-extrabold text-gray-900">{{ formatPrice(product.price) }}</span>
                 </div>
                 <div v-if="cartItem"
                     class="flex items-center justify-between border border-indigo-200 rounded-md bg-indigo-50 w-full">

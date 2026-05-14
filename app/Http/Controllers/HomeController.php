@@ -14,9 +14,9 @@ class HomeController extends Controller
     {
         $query = Product::with(['category', 'supplier']);
 
-        if (request('search')) {
-            $query->where('name', 'like', '%' . request('search') . '%');
-        }
+        $query->when(request('search'), function ($q, $search) {
+            $q->where('name', 'like', '%' . $search . '%');
+        });
 
         // Ambil 50 produk terbaru untuk ditampilkan di halaman utama
         $products = $query->latest()->paginate(50)->withQueryString();

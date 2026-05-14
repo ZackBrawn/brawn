@@ -94,5 +94,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     require __DIR__.'/admin.php';
 });
 
+
+Route::get('/test-error/{code}', function ($code) {
+    abort($code);
+});
+
+
 // Rute otentikasi (login, register, dll.)
 require __DIR__.'/auth.php';

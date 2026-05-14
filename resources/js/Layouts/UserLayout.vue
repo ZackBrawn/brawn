@@ -6,14 +6,25 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
+import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 
 const showingNavigationDropdown = ref(false);
 const page = usePage();
 
 const search = ref(page.props.filters?.search || '');
 
+let searchTimeout = null;
+watch(search, (value) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        handleSearch();
+    }, 500);
+});
+
 const handleSearch = () => {
-    router.get(route('home'), { search: search.value }, {
+    // If search is empty, we don't want to send an empty string param if possible, 
+    // but Inertia will handle it.
+    router.get(route('products.index'), { search: search.value }, {
         preserveState: true,
         replace: true,
         preserveScroll: true
@@ -246,27 +257,82 @@ watch(() => page.props.flash, (flash) => {
                     </div>
                 </div>
 
-                <div :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }"
-                    class="sm:hidden">
-                    <div class="pt-2 pb-3 space-y-1" v-if="$page.props.auth && $page.props.auth.user">
-                        <ResponsiveNavLink :href="route('home')" :active="route().current('home')">
-                            Beranda
+                <transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="transform opacity-0 -translate-y-2"
+                    enter-to-class="transform opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-75"
+                    leave-from-class="transform opacity-100 translate-y-0"
+                    leave-to-class="transform opacity-0 -translate-y-2"
+                >
+                    <div v-show="showingNavigationDropdown"
+                        class="sm:hidden bg-white border-t border-gray-100 shadow-xl pb-4 overflow-hidden"
+                        @click.stop>
+                    <!-- Mobile Search Bar -->
+                    <div class="p-4 border-b border-gray-50">
+                        <div class="relative w-full">
+                            <input type="text"
+                                v-model="search"
+                                @keydown.enter="handleSearch(); showingNavigationDropdown = false"
+                                class="w-full px-4 py-2 border-2 border-blue-100 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                placeholder="Cari produk...">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" @click="handleSearch(); showingNavigationDropdown = false">
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-2 pb-3 space-y-1" v-if="$page.props.auth && $page.props.auth.user" @click="showingNavigationDropdown = false">
+                        <ResponsiveNavLink :href="route('home')" :active="route().current('home')" class="flex items-center gap-3">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                            <span>Beranda</span>
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('products.index')" :active="route().current('products.index')">
-                            Produk
+                        
+                        <ResponsiveNavLink :href="route('products.index')" :active="route().current('products.index')" class="flex items-center gap-3">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                            <span>Produk</span>
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('wishlist.index')" :active="route().current('wishlist.index')">
-                            Wishlist
+
+                        <ResponsiveNavLink :href="route('wishlist.index')" :active="route().current('wishlist.index')" class="flex items-center gap-3">
+                            <div class="relative">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <span v-if="wishlistCount > 0" class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                    {{ wishlistCount }}
+                                </span>
+                            </div>
+                            <span>Wishlist</span>
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('cart.index')" :active="route().current('cart.index')">
-                            Keranjang
+
+                        <ResponsiveNavLink :href="route('cart.index')" :active="route().current('cart.index')" class="flex items-center gap-3">
+                            <div class="relative">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.182 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span v-if="cartCount > 0" class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                    {{ cartCount }}
+                                </span>
+                            </div>
+                            <span>Keranjang</span>
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('orders.index')" :active="route().current('orders.index')">
-                            Pesanan Saya
+
+                        <ResponsiveNavLink :href="route('orders.index')" :active="route().current('orders.index')" class="flex items-center gap-3">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <span>Pesanan Saya</span>
                         </ResponsiveNavLink>
                     </div>
 
-                    <div class="pt-4 pb-1 border-t border-gray-200">
+                    <div class="pt-4 pb-1 border-t border-gray-200" @click="showingNavigationDropdown = false">
                         <div v-if="$page.props.auth && $page.props.auth.user" class="px-4">
                             <div class="font-medium text-base text-gray-800">
                                 {{ $page.props.auth.user.name }}
@@ -276,19 +342,38 @@ watch(() => page.props.flash, (flash) => {
 
                         <div class="mt-3 space-y-1">
                             <template v-if="$page.props.auth && $page.props.auth.user">
-                                <ResponsiveNavLink :href="route('profile.edit')"> Profil </ResponsiveNavLink>
-                                <ResponsiveNavLink :href="route('logout')" method="post" as="button">
+                                <ResponsiveNavLink :href="route('profile.index')" class="flex items-center gap-3">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Profil
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink :href="route('logout')" method="post" as="button" class="flex items-center gap-3 w-full">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
                                     Log Out
                                 </ResponsiveNavLink>
                             </template>
                             <template v-else>
-                                <ResponsiveNavLink :href="route('login')"> Login </ResponsiveNavLink>
-                                <ResponsiveNavLink :href="route('register')"> Register </ResponsiveNavLink>
+                                <ResponsiveNavLink :href="route('login')" class="flex items-center gap-3">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Login
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink :href="route('register')" class="flex items-center gap-3">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                    </svg>
+                                    Register
+                                </ResponsiveNavLink>
                             </template>
                         </div>
                     </div>
                 </div>
-            </nav>
+            </transition>
+        </nav>
 
             <header class="bg-white shadow" v-if="$slots.header">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">

@@ -17,15 +17,15 @@ class ProductController extends Controller
     {
         $query = Product::with(['category', 'supplier']);
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $query->when($request->search, function ($q, $search) {
+            $q->where('name', 'like', '%' . $search . '%');
+        });
 
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
+        $query->when($request->category_id, function ($q, $categoryId) {
+            $q->where('category_id', $categoryId);
+        });
 
-        $products = $query->paginate(12);
+        $products = $query->latest()->paginate(12)->withQueryString();
         $categories = Category::all();
 
         return Inertia::render('User/Product/Index', [

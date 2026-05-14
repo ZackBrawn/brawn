@@ -29,7 +29,7 @@ const user = computed(() => props.auth?.user);
 
     <Head title="Dashboard User" />
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div v-if="user" class="bg-white bg-opacity-50 overflow-hidden shadow-lg sm:rounded-lg p-6">
                 <h1
                     class="text-3xl text-center font-bold bg-gradient-to-r from-indigo-500 to-blue-300 bg-clip-text text-transparent">
@@ -47,7 +47,7 @@ const user = computed(() => props.auth?.user);
                     class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent mb-4">
                     Produk Terbaru</h2>
                 <div v-if="products.data && products.data.length > 0">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         <ProductCard v-for="product in products.data" :key="product.id" :product="product" />
                     </div>
                     <div class="mt-6 flex justify-center">

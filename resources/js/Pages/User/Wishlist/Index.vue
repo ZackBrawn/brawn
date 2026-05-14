@@ -46,14 +46,14 @@ const handleWishlistUpdate = (updatedWishlist) => {
     <Head title="Wishlist Saya" />
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1
                 class="text-3xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent">
                 Wishlist Saya</h1>
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
                 <div v-if="products.data.length > 0"
-                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                     <div v-for="product in products.data" :key="product.id" class="w-full">
                         <ProductCard :product="product" :is-in-wishlist="wishlistProductIds.includes(product.id)"
                             :wishlist="wishlist" @wishlist-updated="handleWishlistUpdate"
